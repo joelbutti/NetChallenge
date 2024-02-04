@@ -21,7 +21,7 @@ namespace NetChallenge.Application.UseCases.Queries.GetAllLocations
 
         public Task<IEnumerable<LocationDto>> Handle(GetAllLocationsQuery request, CancellationToken cancellationToken)
         {
-            return Task.FromResult(_service.GetLocations());
+            return Task.FromResult(_service.GetLocationsDb());
         }
     }
 

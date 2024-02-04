@@ -1,4 +1,5 @@
-﻿using Moq;
+﻿using AutoMapper;
+using Moq;
 using NetChallenge.Application.Abstractions;
 using NetChallenge.Domain.Primitives;
 using NetChallenge.Infrastructure.Persistence.Repositories;

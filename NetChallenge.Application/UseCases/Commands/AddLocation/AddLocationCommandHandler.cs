@@ -28,7 +28,7 @@ namespace NetChallenge.Application.UseCases.Commands.AddLocation
             {
                 var dto = _mapper.Map<AddLocationRequest>(request);
 
-                await _service.AddLocation(dto);
+                await _service.AddLocationDb(dto);
 
                 return new StandardResponse("Location was created succesfully.", System.Net.HttpStatusCode.Created);
             }

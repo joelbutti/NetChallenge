@@ -25,7 +25,7 @@ namespace NetChallenge.Infrastructure.Persistence.Configuration
                 .HasAnnotation("CheckConstraint", "MaxCapacity > 0");
 
             builder.HasMany(l => l.Bookings)
-                .WithOne(o => o.Office)
+                .WithOne()
                 .HasForeignKey(o => o.OfficeId)
                 .IsRequired();
 

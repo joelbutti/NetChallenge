@@ -5,6 +5,10 @@ namespace NetChallenge.Application.Abstractions
     {
         IEnumerable<T> AsEnumerable();
 
-        Task Add(T item);
+        void Add(T item);
+
+        IEnumerable<T> AsEnumerableDb();
+
+        Task AddDb(T item);
     }
 }

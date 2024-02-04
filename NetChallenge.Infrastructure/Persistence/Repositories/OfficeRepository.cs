@@ -7,14 +7,24 @@ namespace NetChallenge.Infrastructure.Persistence.Repositories
     public class OfficeRepository : IOfficeRepository
     {
         private readonly IApplicationDbContext _context;
+        private readonly List<Office> Offices = [];
 
         public OfficeRepository(IApplicationDbContext context)
         {
             _context = context;
         }
-        public IEnumerable<Office> AsEnumerable() => _context.Offices.AsNoTracking();
+        public IEnumerable<Office> AsEnumerable() => Offices;
 
-        public async Task Add(Office item)
+        public void Add(Office item)
+        {
+            Offices.Add(item);
+        }
+
+        public IEnumerable<Office> AsEnumerableDb() => _context.Offices
+                    .AsNoTracking()
+                    .Include(o => o.Bookings);
+
+        public async Task AddDb(Office item)
         {
             await _context.Offices.AddAsync(item);
 

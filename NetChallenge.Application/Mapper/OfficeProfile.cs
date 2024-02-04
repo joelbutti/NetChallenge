@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using NetChallenge.Application.UseCases.Commands.AddLocation;
 using NetChallenge.Application.UseCases.Commands.AddOffice;
+using NetChallenge.Application.UseCases.Queries.GetOfficeSuggestions;
 using NetChallenge.Domain.Entities;
 using NetChallenge.Dto.Output;
 using NetChallenge.Dtos.Input;
@@ -19,6 +20,7 @@ namespace NetChallenge.Application.Mapper
             CreateMap<AddOfficeRequest, AddOfficeCommand>().ReverseMap();
             CreateMap<AddOfficeRequest, Office>().ReverseMap();
             CreateMap<OfficeDto, Office>().ReverseMap();
+            CreateMap<GetOfficeSuggestionsQuery, SuggestionsRequest>().ReverseMap();
         }
     }
 }

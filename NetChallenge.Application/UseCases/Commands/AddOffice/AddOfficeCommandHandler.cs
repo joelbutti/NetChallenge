@@ -28,7 +28,7 @@ namespace NetChallenge.Application.UseCases.Commands.AddOffice
             {
                 var dto = _mapper.Map<AddOfficeRequest>(request);
 
-                await _service.AddOffice(dto);
+                await _service.AddOfficeDb(dto);
 
                 return new StandardResponse("Office was created succesfully.", System.Net.HttpStatusCode.Created);
             }

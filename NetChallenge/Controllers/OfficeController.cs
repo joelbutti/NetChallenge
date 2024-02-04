@@ -4,6 +4,7 @@ using NetChallenge.Application.UseCases.Commands.AddLocation;
 using NetChallenge.Application.UseCases.Commands.AddOffice;
 using NetChallenge.Application.UseCases.Queries.GetAllLocations;
 using NetChallenge.Application.UseCases.Queries.GetAllOffices;
+using NetChallenge.Application.UseCases.Queries.GetOfficeSuggestions;
 using NetChallenge.Domain.Dtos;
 using NetChallenge.Dto.Output;
 
@@ -25,5 +26,8 @@ namespace NetChallenge.API.Controllers
 
         [HttpGet("{locationName}")]
         public async Task<IEnumerable<OfficeDto>> GetAllOffices([FromRoute] string locationName) => await _mediator.Send(new GetAllOfficesQuery(locationName));
+
+        [HttpPost("Suggestions")]
+        public async Task<IEnumerable<OfficeDto>> GetOfficeSuggestions([FromBody] GetOfficeSuggestionsQuery command) => await _mediator.Send(command);
     }
 }

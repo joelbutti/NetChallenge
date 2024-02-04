@@ -20,7 +20,7 @@ namespace NetChallenge.Application.UseCases.Queries.GetAllOffices
 
         public Task<IEnumerable<OfficeDto>> Handle(GetAllOfficesQuery request, CancellationToken cancellationToken)
         {
-            return Task.FromResult(_service.GetOffices(request.LocationName));
+            return Task.FromResult(_service.GetOfficesDb(request.LocationName));
         }
     }
 }

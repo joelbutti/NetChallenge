@@ -27,11 +27,6 @@ namespace NetChallenge.Infrastructure.Persistence.Configuration
             builder.Property(c => c.UserName)
                 .IsRequired();
 
-            builder.HasOne(c => c.Office)
-                .WithMany(o => o.Bookings)
-                .HasForeignKey(c => c.OfficeId)
-                .IsRequired();
-
             builder.HasIndex(c => new { c.OfficeId, c.DateTime, c.Duration })
                 .IsUnique();
         }
