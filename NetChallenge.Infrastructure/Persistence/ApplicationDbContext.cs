@@ -1,13 +1,8 @@
 ﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
-using NetChallenge.Application.Abstractions;
+using NetChallenge.Application.Common.Interfaces;
 using NetChallenge.Domain.Entities;
 using NetChallenge.Domain.Primitives;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace NetChallenge.Infrastructure.Persistence
 {
@@ -33,8 +28,15 @@ namespace NetChallenge.Infrastructure.Persistence
         {
             var domainEvents = ChangeTracker.Entries<AggregateRoot>()
                 .Select(e => e.Entity)
-                .Where(e => e.GetDomainEvents().Any())
-                .SelectMany(e => e.GetDomainEvents());
+                .SelectMany(x =>
+                {
+                    var domainEvents = x.GetDomainEvents();
+
+                    x.ClearDomainEvents();
+
+                    return domainEvents;
+                })
+                .ToList();
 
             var result = await base.SaveChangesAsync(cancellationToken);
 

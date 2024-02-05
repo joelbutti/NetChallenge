@@ -1,7 +1,7 @@
 ﻿using NetChallenge.Dto.Output;
 using NetChallenge.Dtos.Input;
 
-namespace NetChallenge.Application.Abstractions
+namespace NetChallenge.Domain.Abstractions
 {
     public interface IOfficeRentalService
     {

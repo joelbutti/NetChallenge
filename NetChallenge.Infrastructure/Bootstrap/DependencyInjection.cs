@@ -1,16 +1,12 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using NetChallenge.Application.Abstractions;
+using NetChallenge.Application.Common.Interfaces;
+using NetChallenge.Domain.Abstractions;
 using NetChallenge.Domain.Primitives;
 using NetChallenge.Infrastructure.Persistence;
 using NetChallenge.Infrastructure.Persistence.Repositories;
 using NetChallenge.Infrastructure.Services;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace NetChallenge.Infrastructure.Bootstrap
 {

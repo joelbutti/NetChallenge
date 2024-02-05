@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using NetChallenge.Infrastructure.Persistence;
 
@@ -11,9 +12,11 @@ using NetChallenge.Infrastructure.Persistence;
 namespace NetChallenge.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240205173424_valueObjectsLocation")]
+    partial class valueObjectsLocation
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -31,12 +34,21 @@ namespace NetChallenge.Infrastructure.Persistence.Migrations
                     b.Property<DateTime>("DateTime")
                         .HasColumnType("datetime2");
 
+                    b.Property<TimeSpan>("Duration")
+                        .HasColumnType("time")
+                        .HasAnnotation("CheckConstraint", "Duration > 0");
+
                     b.Property<Guid>("OfficeId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<string>("UserName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.HasKey("Id");
 
-                    b.HasIndex("OfficeId");
+                    b.HasIndex("OfficeId", "DateTime", "Duration")
+                        .IsUnique();
 
                     b.ToTable("Bookings", (string)null);
                 });
@@ -65,9 +77,18 @@ namespace NetChallenge.Infrastructure.Persistence.Migrations
                     b.Property<Guid>("LocationId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<int>("MaxCapacity")
+                        .HasColumnType("int")
+                        .HasAnnotation("CheckConstraint", "MaxCapacity > 0");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
                     b.HasKey("Id");
 
-                    b.HasIndex("LocationId");
+                    b.HasIndex("LocationId", "Name")
+                        .IsUnique();
 
                     b.ToTable("Offices", (string)null);
                 });
@@ -78,49 +99,6 @@ namespace NetChallenge.Infrastructure.Persistence.Migrations
                         .WithMany("Bookings")
                         .HasForeignKey("OfficeId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.OwnsOne("NetChallenge.Domain.ValueObjects.Duration", "Duration", b1 =>
-                        {
-                            b1.Property<Guid>("BookingId")
-                                .HasColumnType("uniqueidentifier");
-
-                            b1.Property<TimeSpan>("Value")
-                                .HasColumnType("time")
-                                .HasColumnName("Duration");
-
-                            b1.HasKey("BookingId");
-
-                            b1.ToTable("Bookings");
-
-                            b1.HasAnnotation("CheckConstraint", "Duration > 0");
-
-                            b1.WithOwner()
-                                .HasForeignKey("BookingId");
-                        });
-
-                    b.OwnsOne("NetChallenge.Domain.ValueObjects.UserName", "UserName", b1 =>
-                        {
-                            b1.Property<Guid>("BookingId")
-                                .HasColumnType("uniqueidentifier");
-
-                            b1.Property<string>("Value")
-                                .IsRequired()
-                                .HasColumnType("nvarchar(max)")
-                                .HasColumnName("UserName");
-
-                            b1.HasKey("BookingId");
-
-                            b1.ToTable("Bookings");
-
-                            b1.WithOwner()
-                                .HasForeignKey("BookingId");
-                        });
-
-                    b.Navigation("Duration")
-                        .IsRequired();
-
-                    b.Navigation("UserName")
                         .IsRequired();
                 });
 
@@ -178,52 +156,6 @@ namespace NetChallenge.Infrastructure.Persistence.Migrations
                         .WithMany("Offices")
                         .HasForeignKey("LocationId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.OwnsOne("NetChallenge.Domain.ValueObjects.Name", "Name", b1 =>
-                        {
-                            b1.Property<Guid>("OfficeId")
-                                .HasColumnType("uniqueidentifier");
-
-                            b1.Property<string>("Value")
-                                .IsRequired()
-                                .HasColumnType("nvarchar(450)")
-                                .HasColumnName("Name");
-
-                            b1.HasKey("OfficeId");
-
-                            b1.HasIndex("Value")
-                                .IsUnique();
-
-                            b1.ToTable("Offices");
-
-                            b1.WithOwner()
-                                .HasForeignKey("OfficeId");
-                        });
-
-                    b.OwnsOne("NetChallenge.Domain.ValueObjects.MaxCapacity", "MaxCapacity", b1 =>
-                        {
-                            b1.Property<Guid>("OfficeId")
-                                .HasColumnType("uniqueidentifier");
-
-                            b1.Property<int>("Value")
-                                .HasColumnType("int")
-                                .HasColumnName("MaxCapacity");
-
-                            b1.HasKey("OfficeId");
-
-                            b1.ToTable("Offices");
-
-                            b1.HasAnnotation("CheckConstraint", "MaxCapacity > 0");
-
-                            b1.WithOwner()
-                                .HasForeignKey("OfficeId");
-                        });
-
-                    b.Navigation("MaxCapacity")
-                        .IsRequired();
-
-                    b.Navigation("Name")
                         .IsRequired();
                 });
 

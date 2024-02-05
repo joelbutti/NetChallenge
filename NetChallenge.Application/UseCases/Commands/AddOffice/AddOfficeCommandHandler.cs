@@ -1,13 +1,8 @@
 ﻿using AutoMapper;
 using MediatR;
-using NetChallenge.Application.Abstractions;
+using NetChallenge.Domain.Abstractions;
 using NetChallenge.Domain.Dtos;
 using NetChallenge.Dtos.Input;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace NetChallenge.Application.UseCases.Commands.AddOffice
 {

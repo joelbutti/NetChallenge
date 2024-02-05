@@ -1,6 +1,6 @@
 ﻿using NetChallenge.Domain.Entities;
 
-namespace NetChallenge.Application.Abstractions
+namespace NetChallenge.Domain.Abstractions
 {
     public interface IOfficeRepository : IRepository<Office>
     {

@@ -1,18 +1,11 @@
-﻿using AutoMapper;
-using Azure.Core;
-using NetChallenge.Application.Abstractions;
+﻿
+using NetChallenge.Domain.Abstractions;
 using NetChallenge.Domain.Entities;
-using NetChallenge.Domain.Exceptions;
 using NetChallenge.Domain.Exceptions.BookingErrors;
 using NetChallenge.Domain.Exceptions.LocationErrors;
 using NetChallenge.Domain.Exceptions.OfficeErrors;
 using NetChallenge.Dto.Output;
 using NetChallenge.Dtos.Input;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace NetChallenge.Infrastructure.Services
 {
@@ -34,7 +27,7 @@ namespace NetChallenge.Infrastructure.Services
             var locations = _locationRepository
                                 .AsEnumerable();
 
-            if (locations.Any(l => l.Name == request.Name))
+            if (locations.Any(l => l.Name.Value == request.Name))
                 throw new DuplicateLocationException(request.Name);
 
             var entity = Location.Create(request.Name, request.Neighborhood);
@@ -47,7 +40,7 @@ namespace NetChallenge.Infrastructure.Services
             var locations = _locationRepository
                                 .AsEnumerableDb();
 
-            if (locations.Any(l => l.Name == request.Name))
+            if (locations.Any(l => l.Name.Value == request.Name))
                 throw new DuplicateLocationException(request.Name);
 
             var entity = Location.Create(request.Name, request.Neighborhood);
@@ -59,11 +52,11 @@ namespace NetChallenge.Infrastructure.Services
         {
             var location = _locationRepository
                                 .AsEnumerable()
-                                .FirstOrDefault(loc => loc.Name == request.LocationName)!
+                                .FirstOrDefault(loc => loc.Name.Value == request.LocationName)!
                                 ?? throw new LocationNotFoundException(request.LocationName);
 
             if(location.Offices.Exists(o => o.Name == request.Name))
-                throw new DuplicateOfficeException(location.Name, request.Name);
+                throw new DuplicateOfficeException(location.Name.Value, request.Name);
 
             var entity = Office.Create(location.Id, request.Name, request.MaxCapacity, request.AvailableResources.ToList());
 
@@ -76,11 +69,11 @@ namespace NetChallenge.Infrastructure.Services
         {
             var location = _locationRepository
                                 .AsEnumerableDb()
-                                .FirstOrDefault(loc => loc.Name == request.LocationName)!
+                                .FirstOrDefault(loc => loc.Name.Value == request.LocationName)!
                                 ?? throw new LocationNotFoundException(request.LocationName);
 
             if (location.Offices.Exists(o => o.Name == request.Name))
-                throw new DuplicateOfficeException(location.Name, request.Name);
+                throw new DuplicateOfficeException(location.Name.Value, request.Name);
 
             var entity = Office.Create(location.Id, request.Name, request.MaxCapacity, request.AvailableResources.ToList());
 
@@ -91,7 +84,7 @@ namespace NetChallenge.Infrastructure.Services
         {
             var location = _locationRepository
                                 .AsEnumerable()
-                                .FirstOrDefault(l => l.Name == request.LocationName) 
+                                .FirstOrDefault(l => l.Name.Value == request.LocationName) 
                                 ?? throw new LocationNotFoundException(request.LocationName);
 
             var office = location.Offices
@@ -104,8 +97,10 @@ namespace NetChallenge.Infrastructure.Services
                                             request.DateTime < b.DateTime.Add(b.Duration) &&
                                             request.DateTime.Add(request.Duration) > b.DateTime);
 
-            if (overlappingBooking != null)
+            if (overlappingBooking is not null)
+            {
                 throw new OverlapBookingException(request.DateTime);
+            }
 
             var booking = Booking.Create(office.Id, request.DateTime, request.Duration, request.UserName);
 
@@ -118,7 +113,7 @@ namespace NetChallenge.Infrastructure.Services
         {
             var location = _locationRepository
                                 .AsEnumerableDb()
-                                .FirstOrDefault(l => l.Name == request.LocationName) 
+                                .FirstOrDefault(l => l.Name.Value == request.LocationName) 
                                 ?? throw new LocationNotFoundException(request.LocationName);
 
             var office = location.Offices
@@ -131,8 +126,10 @@ namespace NetChallenge.Infrastructure.Services
                                             request.DateTime < b.DateTime.Add(b.Duration) &&
                                             request.DateTime.Add(request.Duration) > b.DateTime);
 
-            if (overlappingBooking != null)
+            if (overlappingBooking is not null)
+            {
                 throw new OverlapBookingException(request.DateTime);
+            }
 
             var booking = Booking.Create(office.Id, request.DateTime, request.Duration, request.UserName);
 
@@ -143,7 +140,7 @@ namespace NetChallenge.Infrastructure.Services
         {
             var location = _locationRepository
                                 .AsEnumerable()
-                                .FirstOrDefault(l => l.Name == locationName) 
+                                .FirstOrDefault(l => l.Name.Value == locationName) 
                                 ?? throw new LocationNotFoundException(locationName);
 
             var office = _officeRepository
@@ -158,7 +155,7 @@ namespace NetChallenge.Infrastructure.Services
                     DateTime = o.DateTime,
                     Duration = o.Duration,
                     UserName= o.UserName,
-                    LocationName = location.Name,
+                    LocationName = location.Name.Value,
                     OfficeName = office.Name
                 };
             });
@@ -170,7 +167,7 @@ namespace NetChallenge.Infrastructure.Services
         {
             var location = _locationRepository
                                 .AsEnumerableDb()
-                                .FirstOrDefault(l => l.Name == locationName) 
+                                .FirstOrDefault(l => l.Name.Value == locationName) 
                                 ?? throw new LocationNotFoundException(locationName);
 
             var office = _officeRepository
@@ -203,7 +200,7 @@ namespace NetChallenge.Infrastructure.Services
                 return new LocationDto()
                 {
                     Name = l.Name,
-                    Neighborhood = l.Neighborhood
+                    Neighborhood = l.Neighborhood.Value
                 };
             });
         }
@@ -218,7 +215,7 @@ namespace NetChallenge.Infrastructure.Services
                 return new LocationDto()
                 {
                     Name = l.Name,
-                    Neighborhood = l.Neighborhood
+                    Neighborhood = l.Neighborhood.Value
                 };
             });
         }
@@ -257,7 +254,7 @@ namespace NetChallenge.Infrastructure.Services
                 {
                     Name = o.Name,
                     AvailableResources = [.. o.AvailableResources],
-                    LocationName = location.Name,
+                    LocationName = location.Name.Value,
                     MaxCapacity = o.MaxCapacity
                 };
             });
@@ -280,7 +277,7 @@ namespace NetChallenge.Infrastructure.Services
 
                 int convenienceScore = 0;
 
-                if (location.Neighborhood == request.PreferedNeigborHood) convenienceScore = 100;
+                if (location.Neighborhood.Value == request.PreferedNeigborHood) convenienceScore = 100;
 
                 convenienceScore -= (office.MaxCapacity - request.CapacityNeeded);
                 convenienceScore -= (office.AvailableResources.Count - request.ResourcesNeeded.Count());
@@ -294,7 +291,7 @@ namespace NetChallenge.Infrastructure.Services
 
                 return new OfficeDto()
                 {
-                    LocationName = location.Name,
+                    LocationName = location.Name.Value,
                     Name = office.Name,
                     MaxCapacity = office.MaxCapacity,
                     AvailableResources = [.. office.AvailableResources]
@@ -319,7 +316,7 @@ namespace NetChallenge.Infrastructure.Services
 
                 int convenienceScore = 0;
 
-                if (location.Neighborhood == request.PreferedNeigborHood) convenienceScore = 100;
+                if (location.Neighborhood.Value == request.PreferedNeigborHood) convenienceScore = 100;
 
                 convenienceScore -= (office.MaxCapacity - request.CapacityNeeded);
                 convenienceScore -= (office.AvailableResources.Count - request.ResourcesNeeded.Count());
@@ -333,7 +330,7 @@ namespace NetChallenge.Infrastructure.Services
 
                 return new OfficeDto()
                 {
-                    LocationName = location.Name,
+                    LocationName = location.Name.Value,
                     Name = office.Name,
                     MaxCapacity = office.MaxCapacity,
                     AvailableResources = [.. office.AvailableResources]

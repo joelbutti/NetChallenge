@@ -1,7 +1,6 @@
 ﻿using AutoMapper;
 using MediatR;
-using NetChallenge.Application.Abstractions;
-using NetChallenge.Application.UseCases.Queries.GetAllOffices;
+using NetChallenge.Domain.Abstractions;
 using NetChallenge.Dto.Output;
 using NetChallenge.Dtos.Input;
 

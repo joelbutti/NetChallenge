@@ -1,34 +1,28 @@
-﻿using NetChallenge.Domain.Primitives;
+﻿using NetChallenge.Domain.DomainEvents.Location;
+using NetChallenge.Domain.Primitives;
+using NetChallenge.Domain.ValueObjects;
 
 namespace NetChallenge.Domain.Entities
 {
     public sealed class Location : AggregateRoot
     {
-        public Guid Id { get; private set; }
-        public string Name { get; private set; }
-        public string Neighborhood { get; private set; }
+        public Name Name { get; private set; }
+        public Neighborhood Neighborhood { get; private set; }
         public List<Office> Offices { get; private set; } = new();
 
-        private Location(string name, string neighborhood)
+        protected Location(Guid id) : base(id){ }
+
+        private Location(Guid id, string name, string neighborhood) : base(id) 
         {
-            if (string.IsNullOrWhiteSpace(name))
-            {
-                throw new ArgumentException("Name cannot be null or empty.");
-            }
+            Name = Name.Create(name);
+            Neighborhood = Neighborhood.Create(neighborhood);
 
-            if (string.IsNullOrWhiteSpace(neighborhood))
-            {
-                throw new ArgumentException("Neighborhood cannot be null or empty.");
-            }
-
-            Id = Guid.NewGuid();
-            Name = name;
-            Neighborhood = neighborhood;
+            Raise(new LocationCreatedDomainEvent(name));
         }
 
         public static Location Create(string name, string neighborhood)
         {
-            return new Location(name, neighborhood);
+            return new Location(Guid.NewGuid(), name, neighborhood);
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using NetChallenge.Application.Abstractions;
+using NetChallenge.Application.Common.Interfaces;
+using NetChallenge.Domain.Abstractions;
 using NetChallenge.Domain.Entities;
 
 namespace NetChallenge.Infrastructure.Persistence.Repositories

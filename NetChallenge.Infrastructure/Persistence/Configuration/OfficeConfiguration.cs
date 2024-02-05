@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using NetChallenge.Domain.Entities;
+using NetChallenge.Domain.ValueObjects;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,19 +18,29 @@ namespace NetChallenge.Infrastructure.Persistence.Configuration
 
             builder.HasKey(c => c.Id);
 
-            builder.Property(c => c.Name)
-                .IsRequired();
+            builder.OwnsOne(o => o.Name, name =>
+            {
+                name.Property(n => n.Value)
+                    .HasColumnName("Name")
+                    .IsRequired();
 
-            builder.Property(c => c.MaxCapacity)
-                .IsRequired()
-                .HasAnnotation("CheckConstraint", "MaxCapacity > 0");
+                name.HasIndex(n => n.Value).IsUnique();
+            });
+
+            builder.OwnsOne(o => o.MaxCapacity, maxCapacity =>
+            {
+                maxCapacity.Property(n => n.Value)
+                    .HasColumnName("MaxCapacity")
+                    .IsRequired();
+
+                maxCapacity
+                    .HasAnnotation("CheckConstraint", "MaxCapacity > 0");
+            });
 
             builder.HasMany(l => l.Bookings)
                 .WithOne()
                 .HasForeignKey(o => o.OfficeId)
                 .IsRequired();
-
-            builder.HasIndex(c => new { c.LocationId, c.Name }).IsUnique();
 
             builder.Property(c => c.AvailableResources)
                 .HasConversion(

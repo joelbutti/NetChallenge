@@ -20,15 +20,22 @@ namespace NetChallenge.Infrastructure.Persistence.Configuration
             builder.Property(c => c.DateTime)
                 .IsRequired();
 
-            builder.Property(c => c.Duration)
-                .IsRequired()
-                .HasAnnotation("CheckConstraint", "Duration > 0");
+            builder.OwnsOne(o => o.Duration, duration =>
+            {
+                duration.Property(n => n.Value)
+                    .HasColumnName("Duration")
+                    .IsRequired();
 
-            builder.Property(c => c.UserName)
-                .IsRequired();
+                duration
+                    .HasAnnotation("CheckConstraint", "Duration > 0");
+            });
 
-            builder.HasIndex(c => new { c.OfficeId, c.DateTime, c.Duration })
-                .IsUnique();
+            builder.OwnsOne(l => l.UserName, userName =>
+            {
+                userName.Property(n => n.Value)
+                    .HasColumnName("UserName")
+                    .IsRequired();
+            });
         }
     }
 }

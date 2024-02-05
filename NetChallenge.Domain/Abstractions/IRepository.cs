@@ -1,5 +1,5 @@
 ﻿
-namespace NetChallenge.Application.Abstractions
+namespace NetChallenge.Domain.Abstractions
 {
     public interface IRepository<T>
     {

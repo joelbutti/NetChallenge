@@ -17,14 +17,21 @@ namespace NetChallenge.Infrastructure.Persistence.Configuration
 
             builder.HasKey(l => l.Id);
 
-            builder.Property(l => l.Name)
-                .IsRequired();
+            builder.OwnsOne(l => l.Name, name =>
+            {
+                name.Property(n => n.Value)
+                    .HasColumnName("Name")
+                    .IsRequired();
 
-            builder.Property(l => l.Neighborhood)
-                .IsRequired();
+                name.HasIndex(n => n.Value).IsUnique();
+            });
 
-            builder.HasIndex(l => l.Name)
-                .IsUnique();
+            builder.OwnsOne(l => l.Neighborhood, neighborhood =>
+            {
+                neighborhood.Property(n => n.Value)
+                    .HasColumnName("Neighborhood")
+                    .IsRequired();
+            });
 
             builder.HasMany(l => l.Offices)
                 .WithOne()

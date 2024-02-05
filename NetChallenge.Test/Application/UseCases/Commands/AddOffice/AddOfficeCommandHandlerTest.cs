@@ -2,15 +2,9 @@
 using AutoMapper;
 using FluentAssertions;
 using Moq;
-using NetChallenge.Application.Abstractions;
-using NetChallenge.Application.UseCases.Commands.AddLocation;
 using NetChallenge.Application.UseCases.Commands.AddOffice;
+using NetChallenge.Domain.Abstractions;
 using NetChallenge.Dtos.Input;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Xunit;
 
 namespace NetChallenge.Test.Application.UseCases.Commands.AddOffice

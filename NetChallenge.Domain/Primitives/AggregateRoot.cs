@@ -1,12 +1,16 @@
 namespace NetChallenge.Domain.Primitives;
 
-public abstract class AggregateRoot 
+public abstract class AggregateRoot : Entity
 {
-    private readonly List<DomainEvent> _domainEvents = new();
+    private readonly List<IDomainEvent> _domainEvents = new();
 
-    public ICollection<DomainEvent> GetDomainEvents() => _domainEvents;
+    public IReadOnlyCollection<IDomainEvent> GetDomainEvents() => _domainEvents.ToList();
 
-    protected void Raise(DomainEvent domainEvent)
+    public void ClearDomainEvents() => _domainEvents.Clear();
+
+    protected AggregateRoot(Guid id) : base(id) { }
+
+    protected void Raise(IDomainEvent domainEvent)
     {
         _domainEvents.Add(domainEvent);
     }

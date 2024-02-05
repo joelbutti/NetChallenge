@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
 using MediatR;
-using NetChallenge.Application.Abstractions;
+using NetChallenge.Domain.Abstractions;
 using NetChallenge.Domain.Dtos;
 using NetChallenge.Dtos.Input;
 

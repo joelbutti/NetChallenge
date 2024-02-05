@@ -1,5 +1,5 @@
 ﻿using MediatR;
-using NetChallenge.Application.Abstractions;
+using NetChallenge.Domain.Abstractions;
 using NetChallenge.Dto.Output;
 
 namespace NetChallenge.Application.UseCases.Queries.GetAllOffices
