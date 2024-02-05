@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using MediatR;
 using NetChallenge.Application.Abstractions;
+using NetChallenge.Application.UseCases.Queries.GetAllBookings;
 using NetChallenge.Dto.Output;
 using System;
 using System.Collections.Generic;
@@ -10,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace NetChallenge.Application.UseCases.Queries.GetAllLocations
 {
-    public class GetAllLocationsQueryHandler : IRequestHandler<GetAllLocationsQuery, IEnumerable<LocationDto>>
+    public class GetAllLocationsQueryHandler : IRequestHandler<GetAllLocationsQuery, GetAllLocationsResponse>
     {
         private readonly IOfficeRentalService _service;
 
@@ -19,9 +20,18 @@ namespace NetChallenge.Application.UseCases.Queries.GetAllLocations
             _service = service;
         }
 
-        public Task<IEnumerable<LocationDto>> Handle(GetAllLocationsQuery request, CancellationToken cancellationToken)
+        public Task<GetAllLocationsResponse> Handle(GetAllLocationsQuery request, CancellationToken cancellationToken)
         {
-            return Task.FromResult(_service.GetLocationsDb());
+            try
+            {
+                var locations = _service.GetLocationsDb();
+
+                return Task.FromResult(new GetAllLocationsResponse("Getting locations happened successfully.", locations));
+            }
+            catch (Exception ex)
+            {
+                return Task.FromResult(new GetAllLocationsResponse(ex.Message, new List<LocationDto>()));
+            }
         }
     }
 

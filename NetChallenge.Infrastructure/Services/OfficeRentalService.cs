@@ -2,6 +2,10 @@
 using Azure.Core;
 using NetChallenge.Application.Abstractions;
 using NetChallenge.Domain.Entities;
+using NetChallenge.Domain.Exceptions;
+using NetChallenge.Domain.Exceptions.BookingErrors;
+using NetChallenge.Domain.Exceptions.LocationErrors;
+using NetChallenge.Domain.Exceptions.OfficeErrors;
 using NetChallenge.Dto.Output;
 using NetChallenge.Dtos.Input;
 using System;
@@ -27,10 +31,11 @@ namespace NetChallenge.Infrastructure.Services
 
         public void AddLocation(AddLocationRequest request)
         {
-            var locations = _locationRepository.AsEnumerable();
+            var locations = _locationRepository
+                                .AsEnumerable();
 
             if (locations.Any(l => l.Name == request.Name))
-                throw new InvalidOperationException($"There is already a location with the name '{request.Name}'");
+                throw new DuplicateLocationException(request.Name);
 
             var entity = Location.Create(request.Name, request.Neighborhood);
 
@@ -39,6 +44,12 @@ namespace NetChallenge.Infrastructure.Services
 
         public async Task AddLocationDb(AddLocationRequest request)
         {
+            var locations = _locationRepository
+                                .AsEnumerableDb();
+
+            if (locations.Any(l => l.Name == request.Name))
+                throw new DuplicateLocationException(request.Name);
+
             var entity = Location.Create(request.Name, request.Neighborhood);
 
             await _locationRepository.AddDb(entity);
@@ -46,11 +57,13 @@ namespace NetChallenge.Infrastructure.Services
 
         public void AddOffice(AddOfficeRequest request)
         {
-            var location = _locationRepository.AsEnumerable().FirstOrDefault(loc => loc.Name == request.LocationName)!
-                ?? throw new InvalidOperationException($"Location '{request.LocationName}' not found.");
+            var location = _locationRepository
+                                .AsEnumerable()
+                                .FirstOrDefault(loc => loc.Name == request.LocationName)!
+                                ?? throw new LocationNotFoundException(request.LocationName);
 
-            if(location.Offices.Any(o => o.Name == request.Name))
-                throw new InvalidOperationException($"There is already a office in location {location.Name} with the name '{request.Name}'");
+            if(location.Offices.Exists(o => o.Name == request.Name))
+                throw new DuplicateOfficeException(location.Name, request.Name);
 
             var entity = Office.Create(location.Id, request.Name, request.MaxCapacity, request.AvailableResources.ToList());
 
@@ -61,8 +74,13 @@ namespace NetChallenge.Infrastructure.Services
 
         public async Task AddOfficeDb(AddOfficeRequest request)
         {
-            var location = _locationRepository.AsEnumerable().FirstOrDefault(loc => loc.Name == request.LocationName)!
-                    ?? throw new InvalidOperationException($"Location '{request.LocationName}' not found.");
+            var location = _locationRepository
+                                .AsEnumerableDb()
+                                .FirstOrDefault(loc => loc.Name == request.LocationName)!
+                                ?? throw new LocationNotFoundException(request.LocationName);
+
+            if (location.Offices.Exists(o => o.Name == request.Name))
+                throw new DuplicateOfficeException(location.Name, request.Name);
 
             var entity = Office.Create(location.Id, request.Name, request.MaxCapacity, request.AvailableResources.ToList());
 
@@ -71,19 +89,23 @@ namespace NetChallenge.Infrastructure.Services
 
         public void BookOffice(BookOfficeRequest request)
         {
-            var location = _locationRepository.AsEnumerable()
-                .FirstOrDefault(l => l.Name == request.LocationName) ?? throw new InvalidOperationException($"Location '{request.LocationName}' not found.");
+            var location = _locationRepository
+                                .AsEnumerable()
+                                .FirstOrDefault(l => l.Name == request.LocationName) 
+                                ?? throw new LocationNotFoundException(request.LocationName);
 
             var office = location.Offices
-                .Find(o => o.Name == request.OfficeName) ?? throw new InvalidOperationException($"Office '{request.OfficeName}' in Location '{request.LocationName}' not found.");
+                                .Find(o => o.Name == request.OfficeName) 
+                                ?? throw new OfficeNotFoundException(request.LocationName, request.OfficeName);
 
-            var overlappingBooking = _bookingRepository.AsEnumerable()
-                .FirstOrDefault(b => b.OfficeId == office.Id &&
-                                      request.DateTime < b.DateTime.Add(b.Duration) &&
-                                      request.DateTime.Add(request.Duration) > b.DateTime);
+            var overlappingBooking = _bookingRepository
+                                        .AsEnumerable()
+                                        .FirstOrDefault(b => b.OfficeId == office.Id &&
+                                            request.DateTime < b.DateTime.Add(b.Duration) &&
+                                            request.DateTime.Add(request.Duration) > b.DateTime);
 
             if (overlappingBooking != null)
-                throw new InvalidOperationException("Booking overlaps with an existing reservation.");
+                throw new OverlapBookingException(request.DateTime);
 
             var booking = Booking.Create(office.Id, request.DateTime, request.Duration, request.UserName);
 
@@ -94,19 +116,23 @@ namespace NetChallenge.Infrastructure.Services
 
         public async Task BookOfficeDb(BookOfficeRequest request)
         {
-            var location = _locationRepository.AsEnumerableDb()
-                .FirstOrDefault(l => l.Name == request.LocationName) ?? throw new InvalidOperationException($"Location '{request.LocationName}' not found.");
+            var location = _locationRepository
+                                .AsEnumerableDb()
+                                .FirstOrDefault(l => l.Name == request.LocationName) 
+                                ?? throw new LocationNotFoundException(request.LocationName);
 
             var office = location.Offices
-                .Find(o => o.Name == request.OfficeName) ?? throw new InvalidOperationException($"Office '{request.OfficeName}' in Location '{request.LocationName}' not found.");
+                            .Find(o => o.Name == request.OfficeName) 
+                            ?? throw new OfficeNotFoundException(request.LocationName, request.OfficeName);
 
-            var overlappingBooking = _bookingRepository.AsEnumerableDb()
-                .FirstOrDefault(b => b.OfficeId == office.Id &&
-                                      request.DateTime < b.DateTime.Add(b.Duration) &&
-                                      request.DateTime.Add(request.Duration) > b.DateTime);
+            var overlappingBooking = _bookingRepository
+                                        .AsEnumerableDb()
+                                        .FirstOrDefault(b => b.OfficeId == office.Id &&
+                                            request.DateTime < b.DateTime.Add(b.Duration) &&
+                                            request.DateTime.Add(request.Duration) > b.DateTime);
 
             if (overlappingBooking != null)
-                throw new InvalidOperationException("Booking overlaps with an existing reservation.");
+                throw new OverlapBookingException(request.DateTime);
 
             var booking = Booking.Create(office.Id, request.DateTime, request.Duration, request.UserName);
 
@@ -115,11 +141,15 @@ namespace NetChallenge.Infrastructure.Services
 
         public IEnumerable<BookingDto> GetBookings(string locationName, string officeName)
         {
-            var location = _locationRepository.AsEnumerable()
-            .FirstOrDefault(l => l.Name == locationName) ?? throw new InvalidOperationException($"Location '{locationName}' not found.");
+            var location = _locationRepository
+                                .AsEnumerable()
+                                .FirstOrDefault(l => l.Name == locationName) 
+                                ?? throw new LocationNotFoundException(locationName);
 
-            var office = _officeRepository.AsEnumerable()
-            .FirstOrDefault(o => o.Name == officeName) ?? throw new InvalidOperationException($"Office '{officeName}' in Location '{locationName}' not found.");
+            var office = _officeRepository
+                            .AsEnumerable()
+                            .FirstOrDefault(o => o.Name == officeName) 
+                            ?? throw new OfficeNotFoundException(locationName, officeName);
 
             var bookings = office.Bookings.Select(o =>
             {
@@ -138,11 +168,15 @@ namespace NetChallenge.Infrastructure.Services
 
         public IEnumerable<BookingDto> GetBookingsDb(string locationName, string officeName)
         {
-            var location = _locationRepository.AsEnumerableDb()
-            .FirstOrDefault(l => l.Name == locationName) ?? throw new InvalidOperationException($"Location '{locationName}' not found.");
+            var location = _locationRepository
+                                .AsEnumerableDb()
+                                .FirstOrDefault(l => l.Name == locationName) 
+                                ?? throw new LocationNotFoundException(locationName);
 
-            var office = _officeRepository.AsEnumerableDb()
-            .FirstOrDefault(o => o.Name == officeName) ?? throw new InvalidOperationException($"Office '{officeName}' in Location '{locationName}' not found.");
+            var office = _officeRepository
+                            .AsEnumerableDb()
+                            .FirstOrDefault(o => o.Name == officeName) 
+                            ?? throw new OfficeNotFoundException(locationName, officeName);
 
             var bookings = office.Bookings.Select(o =>
             {
@@ -161,7 +195,8 @@ namespace NetChallenge.Infrastructure.Services
 
         public IEnumerable<LocationDto> GetLocations()
         {
-            var entities = _locationRepository.AsEnumerable();
+            var entities = _locationRepository
+                                .AsEnumerable();
 
             return entities.Select(l =>
             {
@@ -175,7 +210,8 @@ namespace NetChallenge.Infrastructure.Services
 
         public IEnumerable<LocationDto> GetLocationsDb()
         {
-            var entities = _locationRepository.AsEnumerableDb();
+            var entities = _locationRepository
+                                .AsEnumerableDb();
 
             return entities.Select(l =>
             {
@@ -189,19 +225,17 @@ namespace NetChallenge.Infrastructure.Services
 
         public IEnumerable<OfficeDto> GetOffices(string locationName)
         {
-            var location = _locationRepository.AsEnumerable().FirstOrDefault(loc => loc.Name == locationName);
-
-            if (location == null)
-            {
-                return Enumerable.Empty<OfficeDto>();
-            }
+            var location = _locationRepository
+                                .AsEnumerable()
+                                .FirstOrDefault(loc => loc.Name == locationName) 
+                                ?? throw new LocationNotFoundException(locationName);
 
             var offices = location.Offices.Select(o =>
             {
                 return new OfficeDto()
                 {
                     Name= o.Name,
-                    AvailableResources = o.AvailableResources.ToArray(),
+                    AvailableResources = [.. o.AvailableResources],
                     LocationName = location.Name,
                     MaxCapacity = o.MaxCapacity
                 };
@@ -212,19 +246,17 @@ namespace NetChallenge.Infrastructure.Services
 
         public IEnumerable<OfficeDto> GetOfficesDb(string locationName)
         {
-            var location = _locationRepository.AsEnumerableDb().FirstOrDefault(loc => loc.Name == locationName);
-
-            if (location == null)
-            {
-                return Enumerable.Empty<OfficeDto>();
-            }
+            var location = _locationRepository
+                                .AsEnumerableDb()
+                                .FirstOrDefault(loc => loc.Name == locationName)
+                                ?? throw new LocationNotFoundException(locationName);
 
             var offices = location.Offices.Select(o =>
             {
                 return new OfficeDto()
                 {
                     Name = o.Name,
-                    AvailableResources = o.AvailableResources.ToArray(),
+                    AvailableResources = [.. o.AvailableResources],
                     LocationName = location.Name,
                     MaxCapacity = o.MaxCapacity
                 };

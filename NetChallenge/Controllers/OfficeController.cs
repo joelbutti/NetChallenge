@@ -25,9 +25,9 @@ namespace NetChallenge.API.Controllers
         public async Task<StandardResponse> AddOffice([FromBody] AddOfficeCommand command) => await _mediator.Send(command);
 
         [HttpGet("{locationName}")]
-        public async Task<IEnumerable<OfficeDto>> GetAllOffices([FromRoute] string locationName) => await _mediator.Send(new GetAllOfficesQuery(locationName));
+        public async Task<GetAllOfficesResponse> GetAllOffices([FromRoute] string locationName) => await _mediator.Send(new GetAllOfficesQuery(locationName));
 
         [HttpPost("Suggestions")]
-        public async Task<IEnumerable<OfficeDto>> GetOfficeSuggestions([FromBody] GetOfficeSuggestionsQuery command) => await _mediator.Send(command);
+        public async Task<GetOfficeSuggestionsResponse> GetOfficeSuggestions([FromBody] GetOfficeSuggestionsQuery command) => await _mediator.Send(command);
     }
 }

@@ -23,6 +23,6 @@ namespace NetChallenge.API.Controllers
         public async Task<StandardResponse> AddLocation([FromBody] AddLocationCommand command) => await _mediator.Send(command);
 
         [HttpGet]
-        public async Task<IEnumerable<LocationDto>> GetAllLocations() => await _mediator.Send(new GetAllLocationsQuery());
+        public async Task<GetAllLocationsResponse> GetAllLocations() => await _mediator.Send(new GetAllLocationsQuery());
     }
 }

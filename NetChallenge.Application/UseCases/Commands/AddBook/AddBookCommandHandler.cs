@@ -26,7 +26,7 @@ namespace NetChallenge.Application.UseCases.Commands.AddBook
 
                 await _service.BookOfficeDb(dto);
 
-                return new StandardResponse("Office was booked succesfully.", System.Net.HttpStatusCode.Created);
+                return new StandardResponse($"Office {request.OfficeName} was booked succesfully.", System.Net.HttpStatusCode.Created);
             }
             catch (Exception ex)
             {

@@ -1,5 +1,4 @@
-﻿using MediatR;
-using NetChallenge.Dto.Output;
+﻿using NetChallenge.Dto.Output;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,5 +7,5 @@ using System.Threading.Tasks;
 
 namespace NetChallenge.Application.UseCases.Queries.GetAllLocations
 {
-    public record struct GetAllLocationsQuery() : IRequest<GetAllLocationsResponse>;
+    public record struct GetAllLocationsResponse(string Message, IEnumerable<LocationDto> Locations);
 }

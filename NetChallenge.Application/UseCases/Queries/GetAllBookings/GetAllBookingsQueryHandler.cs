@@ -25,7 +25,7 @@ namespace NetChallenge.Application.UseCases.Queries.GetAllBookings
             {
                 var bookings = _service.GetBookingsDb(request.LocationName, request.OfficeName);
 
-                return Task.FromResult(new GetAllBookingsResponse("Getting office's book succesfully.", bookings));
+                return Task.FromResult(new GetAllBookingsResponse("Getting office's book happened successfully.", bookings));
             }
             catch (Exception ex)
             {

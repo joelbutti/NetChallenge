@@ -30,7 +30,7 @@ namespace NetChallenge.Application.UseCases.Commands.AddOffice
 
                 await _service.AddOfficeDb(dto);
 
-                return new StandardResponse("Office was created succesfully.", System.Net.HttpStatusCode.Created);
+                return new StandardResponse($"Office {request.Name} in location {request.LocationName} was created succesfully.", System.Net.HttpStatusCode.Created);
             }
             catch (Exception ex)
             {

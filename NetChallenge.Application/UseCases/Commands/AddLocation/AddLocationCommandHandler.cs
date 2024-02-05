@@ -30,7 +30,7 @@ namespace NetChallenge.Application.UseCases.Commands.AddLocation
 
                 await _service.AddLocationDb(dto);
 
-                return new StandardResponse("Location was created succesfully.", System.Net.HttpStatusCode.Created);
+                return new StandardResponse($"Location {request.Name} was created succesfully.", System.Net.HttpStatusCode.Created);
             }
             catch (Exception ex)
             {

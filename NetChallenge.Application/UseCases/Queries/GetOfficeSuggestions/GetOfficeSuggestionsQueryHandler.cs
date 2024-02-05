@@ -1,12 +1,13 @@
 ﻿using AutoMapper;
 using MediatR;
 using NetChallenge.Application.Abstractions;
+using NetChallenge.Application.UseCases.Queries.GetAllOffices;
 using NetChallenge.Dto.Output;
 using NetChallenge.Dtos.Input;
 
 namespace NetChallenge.Application.UseCases.Queries.GetOfficeSuggestions
 {
-    public class GetOfficeSuggestionsQueryHandler : IRequestHandler<GetOfficeSuggestionsQuery, IEnumerable<OfficeDto>>
+    public class GetOfficeSuggestionsQueryHandler : IRequestHandler<GetOfficeSuggestionsQuery, GetOfficeSuggestionsResponse>
     {
         private readonly IOfficeRentalService _service;
         private readonly IMapper _mapper;
@@ -17,13 +18,20 @@ namespace NetChallenge.Application.UseCases.Queries.GetOfficeSuggestions
             _service = service;
         }
 
-        public Task<IEnumerable<OfficeDto>> Handle(GetOfficeSuggestionsQuery request, CancellationToken cancellationToken)
+        public Task<GetOfficeSuggestionsResponse> Handle(GetOfficeSuggestionsQuery request, CancellationToken cancellationToken)
         {
-            var dto = _mapper.Map<SuggestionsRequest>(request);
+            try
+            {
+                var dto = _mapper.Map<SuggestionsRequest>(request);
 
-            var officesSuggestions = _service.GetOfficeSuggestionsDb(dto);
+                var officesSuggestions = _service.GetOfficeSuggestionsDb(dto);
 
-            return Task.FromResult(officesSuggestions);
+                return Task.FromResult(new GetOfficeSuggestionsResponse("Getting suggestions happened successfully.", officesSuggestions));
+            }
+            catch (Exception ex)
+            {
+                return Task.FromResult(new GetOfficeSuggestionsResponse(ex.Message, new List<OfficeDto>()));
+            }
         }
     }
 }
